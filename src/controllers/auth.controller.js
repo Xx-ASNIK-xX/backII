@@ -27,7 +27,7 @@ export const register = async (req, res) => {
         const token = jwt.sign(
             { id: newUser._id, email: newUser.email },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '15m' }
         );
 
         Logger.info('Usuario registrado exitosamente:', { userId: newUser._id });
@@ -56,7 +56,7 @@ export const login = async (req, res) => {
         const token = jwt.sign(
             { id: user._id, email: user.email },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '15m' }
         );
 
         Logger.info('Usuario logueado exitosamente:', { userId: user._id });

@@ -14,12 +14,18 @@ if (!process.env.JWT_SECRET) {
 
 const options = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.JWT_SECRET
+    secretOrKey: process.env.JWT_SECRET,
+    ignoreExpiration: false
 };
 
 // Estrategia JWT para autenticación general
 passport.use('jwt', new JwtStrategy(options, async (jwtPayload, done) => {
     try {
+        // Verificar si el token ha expirado
+        if (jwtPayload.exp < Date.now() / 1000) {
+            return done(new Error('Token expirado'), false);
+        }
+
         const user = await UserModel.findById(jwtPayload.id);
         if (!user) {
             return done(null, false);
@@ -34,6 +40,11 @@ passport.use('jwt', new JwtStrategy(options, async (jwtPayload, done) => {
 // Estrategia para la ruta /current
 passport.use('current', new JwtStrategy(options, async (jwtPayload, done) => {
     try {
+        // Verificar si el token ha expirado
+        if (jwtPayload.exp < Date.now() / 1000) {
+            return done(new Error('Token expirado'), false);
+        }
+
         const user = await UserModel.findById(jwtPayload.id);
         if (!user) {
             return done(null, false);

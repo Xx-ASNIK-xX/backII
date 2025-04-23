@@ -3,6 +3,24 @@ import Logger from '../utils/logger.js';
 export const errorHandler = (err, req, res, next) => {
     Logger.error('Error en la aplicación:', err.stack);
 
+    // Errores de token expirado
+    if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({
+            status: 'error',
+            error: 'Token expirado',
+            message: 'Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.'
+        });
+    }
+
+    // Errores de token inválido
+    if (err.name === 'JsonWebTokenError') {
+        return res.status(401).json({
+            status: 'error',
+            error: 'Token inválido',
+            message: 'El token proporcionado no es válido.'
+        });
+    }
+
     // Errores de validación de Mongoose
     if (err.name === 'ValidationError') {
         return res.status(400).json({
