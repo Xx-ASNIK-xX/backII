@@ -18,6 +18,11 @@ import Logger from './utils/logger.js';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import passport from 'passport';
+import sessionRoutes from './routes/session.routes.js';
+import cookieParser from 'cookie-parser';
+import usersApiRoutes from './routes/api/users.routes.js';
+import usersViewRoutes from './routes/users.views.routes.js';
+import sessionsApiRoutes from './routes/api/sessions.routes.js';
 
 // Configuración de dotenv (debe ser lo primero)
 dotenv.config();
@@ -38,6 +43,7 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(process.cwd(), "public")));
+app.use(cookieParser(process.env.SESSION_SECRET));
 
 // Configurar Handlebars
 configureHandlebars(app);
@@ -60,6 +66,18 @@ import './config/passport.config.js';
 // Inicializar Passport
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Rutas de sesión (login/registro)
+app.use('/', sessionRoutes);
+
+// Rutas de API de usuarios
+app.use('/api/users', usersApiRoutes);
+
+// Ruta para validar el JWT y obtener datos del usuario actual
+app.use('/api/sessions', sessionsApiRoutes);
+
+// Rutas de vistas de usuarios
+app.use('/users', usersViewRoutes);
 
 // Rutas
 app.use("/api/products", productsRouter);

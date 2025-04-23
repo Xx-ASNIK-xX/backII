@@ -14,6 +14,8 @@ const getHomeView = async (req, res) => {
 };
 
 const getRealTimeProductsView = async (req, res) => {
+    // Asegurar autenticación
+    if (!req.session.user) return res.redirect('/login');
     try {
         const products = await productManager.getProducts({ limit: 100 });
         res.render('realTimeProducts', { products: products.docs });
@@ -24,6 +26,8 @@ const getRealTimeProductsView = async (req, res) => {
 };
 
 const getProducts = async (req, res) => {
+    // Asegurar autenticación
+    if (!req.session.user) return res.redirect('/login');
     try {
         const { limit = 10, page = 1, sort, category, query } = req.query;
         const options = {
@@ -55,6 +59,7 @@ const getProducts = async (req, res) => {
         };
         
         res.render('products', {
+            user: req.session.user,
             products: result.docs,
             categories,
             selectedCategory: category,

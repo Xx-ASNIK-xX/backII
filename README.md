@@ -1,17 +1,17 @@
 # 🏍️ E-commerce de Motos - Backend API
 
 ## 📝 Descripción
-Este proyecto es un e-commerce backend desarrollado con Node.js, Express y MongoDB, enfocado en la venta de motocicletas. Implementa una API RESTful con funcionalidades de productos y carrito de compras, incluyendo WebSockets para actualizaciones en tiempo real.
+Este proyecto es un e-commerce backend desarrollado con Node.js, Express y MongoDB, enfocado en la venta de motocicletas. Implementa una API RESTful con funcionalidades completas de productos, carrito de compras, autenticación de usuarios con JWT, control de roles y actualizaciones en tiempo real mediante WebSockets.
 
 ## 🎯 Objetivos Alcanzados
-- Implementación de API RESTful completa
-- Integración con MongoDB para persistencia de datos
-- Sistema de carrito de compras funcional
-- Actualizaciones en tiempo real con WebSockets
-- Interfaz de usuario con Handlebars
-- Manejo robusto de errores
-- Validaciones de datos
-- Paginación y filtros de productos
+- Autenticación y autorización segura con JWT
+- Gestión completa de usuarios y roles (admin/user)
+- API RESTful para productos y carritos
+- ersistencia de datos con MongoDB Atlas y GridFS para imágenes
+- Vistas dinámicas con Handlebars para login, registro y perfil de usuario
+- Actualizaciones en tiempo real con Socket.IO
+- Manejo robusto de errores y validaciones
+- Arquitectura escalable basada en capas (N-layer)
 
 ## 🛠️ Tecnologías Utilizadas
 - Node.js
@@ -21,28 +21,59 @@ Este proyecto es un e-commerce backend desarrollado con Node.js, Express y Mongo
 - Socket.IO
 - Handlebars
 - Bootstrap
+- Passport-JWT
+- bcrypt
+- cookie-parser
 
 ## 📦 Estructura del Proyecto
 ```
-src/
-├── config/
-│   └── database.js
-├── controllers/
-│   ├── products.controller.js
-│   └── carts.controller.js
-├── models/
-│   ├── product.model.js
-│   └── cart.model.js
-├── routes/
-│   ├── products.routes.js
-│   ├── carts.routes.js
-│   └── views.routes.js
-├── views/
-│   ├── products.handlebars
-│   ├── cart.handlebars
-│   └── realtimeproducts.handlebars
-├── websocket/
-│   └── socket.js
+src
+│   ├── app.js
+│   ├── config
+│   │   ├── database.js
+│   │   ├── handlebars.config.js
+│   │   └── passport.config.js
+│   ├── controllers
+│   │   ├── auth.controller.js
+│   │   ├── products.controller.js
+│   │   ├── session.controller.js
+│   │   ├── users.api.controller.js
+│   │   ├── users.views.controller.js
+│   │   └── views.controller.js
+│   ├── managers
+│   │   └── ProductManager.js
+│   ├── middlewares
+│   │   ├── auth.middleware.js
+│   │   ├── error.middleware.js
+│   │   ├── jwt.middleware.js
+│   │   └── validation.middleware.js
+│   ├── models
+│   │   └── user.model.js
+│   ├── routes
+│   │   ├── api
+│   │   │   ├── sessions.routes.js
+│   │   │   └── users.routes.js
+│   │   ├── auth.routes.js
+│   │   ├── carts.routes.js
+│   │   ├── image.routes.js
+│   │   ├── products.routes.js
+│   │   ├── session.routes.js
+│   │   ├── users.views.routes.js
+│   │   └── views.routes.js
+│   ├── services
+│   │   └── user.service.js
+│   ├── utils
+│   │   └── logger.js
+│   └── websocket
+│       └── socket.js
+├── public                   
+│   ├── js
+│   │   └── realTimeProducts.js        
+│   └── images
+├── logs
+│    ├── combined.log
+│    └── error.log
+│
 ├── services/          # Nueva capa de servicios
 ├── dto/               # Data Transfer Objects
 ├── constants/         # Constantes y enumeraciones
@@ -53,24 +84,45 @@ src/
 
 ## 🚀 Funcionalidades Implementadas
 
-### Productos
-- Listado con paginación
-- Filtrado por categoría
-- Ordenamiento por precio
-- Búsqueda en tiempo real
-- Gestión completa (CRUD)
+### Autenticación y Autorización
+- Registro y login con vistas Handlebars (/register, /login)
+- Token JWT generado con expiración de 15 minutos y almacenado en cookie HttpOnly (currentUser)
+- Estrategia Passport-JWT para autenticar desde headers o cookies
+- Middleware authJwt para proteger rutas privadas
+- Middleware forwardAuthenticated para redirigir usuarios logueados fuera del login
+- Endpoint /api/sessions/current devuelve datos no sensibles del usuario autenticado
+- Roles de usuario (user, admin) para controlar acceso a funcionalidades
+- Contraseñas hasheadas con bcrypt
 
-### Carrito
+### Gestión de Usuarios
+- CRUD completo en /api/users
+- Modelo User: first_name, last_name, email, age, password, cart, role
+- Vista current.handlebars para mostrar información del perfil del usuario logueado
+
+### Productos
+- CRUD completo con filtros, paginación y ordenamiento
+- Carga de imágenes a MongoDB usando GridFS
+- Carrusel de imágenes por producto
+- Vista detallada de productos
+- WebSockets para actualizar productos en tiempo real
+
+### Carrito de Compras
 - Agregar/eliminar productos
 - Actualizar cantidades
 - Cálculo de totales
 - Persistencia de datos
 - Validaciones de stock
 
-### WebSockets
+### WebSockets 
 - Actualizaciones en tiempo real
 - Notificaciones instantáneas
 - Sincronización de datos
+
+### Manejo de Errores y Validaciones
+- Middleware centralizado para errores
+- Códigos HTTP consistentes
+- Validaciones de formularios y tipos de datos
+- Rutas protegidas según estado de autenticación
 
 ## 💡 Proceso de Desarrollo
 1. Configuración inicial del proyecto y dependencias
@@ -85,6 +137,12 @@ src/
 ## 🙏 Agradecimientos
 Quiero expresar mi más sincero agradecimiento a los profesores que me guiaron en este proceso de aprendizaje:
 
+### Back II
+- **Profesor Mauricio Di Pietro**: Por su invaluable apoyo y claridad al enseñarnos los pilares del desarrollo backend II. Su manera de simplificar lo complejo hizo que cada línea de código tuviera sentido
+.
+- **Profesor adjunto David Alvarez**: Por su orientación al enseñarnos desde los fundamentos hasta las buenas prácticas del desarrollo backend. Cada error corregido fue una lección aprendida.
+
+### Back I
 - **Profesor Mauricio Gastón Lúquez**: Por su invaluable guía y paciencia en la enseñanza de los conceptos fundamentales de desarrollo backend.
 - **Profesor adjunto Lucia Nerea Gigena**: Por compartir su experiencia y conocimientos en el desarrollo de aplicaciones web y por su apoyo constante y retroalimentación constructiva.
 

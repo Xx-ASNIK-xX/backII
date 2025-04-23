@@ -12,20 +12,29 @@ if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET no está definido en las variables de entorno');
 }
 
-const options = {
+// Función para extraer el JWT de la cookie firmada
+const cookieExtractor = req => {
+    if (req && req.signedCookies) {
+        return req.signedCookies.currentUser;
+    }
+    return null;
+};
+
+const headerOptions = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.JWT_SECRET,
     ignoreExpiration: false
 };
 
-// Estrategia JWT para autenticación general
-passport.use('jwt', new JwtStrategy(options, async (jwtPayload, done) => {
-    try {
-        // Verificar si el token ha expirado
-        if (jwtPayload.exp < Date.now() / 1000) {
-            return done(new Error('Token expirado'), false);
-        }
+const cookieOptions = {
+    jwtFromRequest: cookieExtractor,
+    secretOrKey: process.env.JWT_SECRET,
+    ignoreExpiration: false
+};
 
+// Estrategia JWT para autenticación general usando header bearer token
+passport.use('jwt', new JwtStrategy(headerOptions, async (jwtPayload, done) => {
+    try {
         const user = await UserModel.findById(jwtPayload.id);
         if (!user) {
             return done(null, false);
@@ -37,14 +46,9 @@ passport.use('jwt', new JwtStrategy(options, async (jwtPayload, done) => {
     }
 }));
 
-// Estrategia para la ruta /current
-passport.use('current', new JwtStrategy(options, async (jwtPayload, done) => {
+// Estrategia 'current' usando cookie firmada
+passport.use('current', new JwtStrategy(cookieOptions, async (jwtPayload, done) => {
     try {
-        // Verificar si el token ha expirado
-        if (jwtPayload.exp < Date.now() / 1000) {
-            return done(new Error('Token expirado'), false);
-        }
-
         const user = await UserModel.findById(jwtPayload.id);
         if (!user) {
             return done(null, false);
